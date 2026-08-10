@@ -5,108 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Access Portal</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #f8f9fa; margin: 0; padding: 20px; }
-        .ad-container { margin: 20px auto; min-height: 100px; display: flex; justify-content: center; align-items: center; }
-        .btn-main { padding: 15px 30px; font-size: 18px; color: #fff; background: #007bff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-main:disabled { background: #6c757d; cursor: not-allowed; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .ad-space { margin: 15px 0; min-height: 90px; background: #fafafa; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
+        .btn-action { padding: 14px 28px; font-size: 17px; color: #fff; background: #007bff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; }
+        .btn-action:disabled { background: #6c757d; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <!-- TOP AD SPACE -->
-    <div id="top-ad-space" class="ad-container"></div>
+<div class="container">
+    <!-- TOP AD SPACE (Header Ad: A-Ads / Evadav / AdSterra) -->
+    <div id="top-ad-space" class="ad-space"><span>[ Header Banner Loading... ]</span></div>
 
-    <h2>File Download Portal</h2>
-    <p>Please click the button below to watch the ad and continue.</p>
+    <h3>🔐 File Access Verification</h3>
+    <p>Please click the button below to complete the verification step and unlock your link.</p>
 
     <!-- REWARDED AD BUTTON -->
-    <button id="rewarded-btn" class="btn-main" onclick="playRewardedAd()">Loading Ads...</button>
+    <button id="rewarded-btn" class="btn-action" onclick="handleRewardedAction()">Watch Ad & Continue</button>
 
-    <!-- BOTTOM AD SPACE -->
-    <div id="bottom-ad-space" class="ad-container"></div>
+    <!-- BOTTOM AD SPACE (Footer Ad) -->
+    <div id="bottom-ad-space" class="ad-space"><span>[ Footer Banner Loading... ]</span></div>
+</div>
 
-    <script>
-        // आपका Termux/Server API URL (Ngrok / Cloudflare Tunnel Link)
-        const API_URL = "https://your-termux-domain.trycloudflare.com/api/get-ad-config";
+<script>
+    // 🔗 यहाँ अपना Termux Ngrok या Cloudflare Tunnel URL डालें
+    const TERMUX_API_URL = "YOUR_TERMUX_TUNNEL_URL/api/get-ad-config";
 
-        let currentConfig = {};
+    let currentAdConfig = {};
 
-        async function loadDynamicAds() {
-            try {
-                const res = await fetch(API_URL);
-                currentConfig = await res.json();
+    async function fetchAdConfig() {
+        try {
+            const res = await fetch(TERMUX_API_URL);
+            currentAdConfig = await res.json();
 
-                // 1. TOP AD INJECTION (e.g. A-Ads / Evadav)
-                if (currentConfig.header && currentConfig.header.status) {
-                    injectAdScript("top-ad-space", currentConfig.header.script_code);
-                }
-
-                // 2. BOTTOM AD INJECTION (e.g. AdSterra / Monetag Banner)
-                if (currentConfig.footer && currentConfig.footer.status) {
-                    injectAdScript("bottom-ad-space", currentConfig.footer.script_code);
-                }
-
-                // 3. REWARDED AD SETUP (Monetag / OnClick)
-                if (currentConfig.popup && currentConfig.popup.status) {
-                    injectScriptTag(currentConfig.popup.script_url);
-                    document.getElementById("rewarded-btn").innerText = "Watch Ad & Continue";
-                } else {
-                    document.getElementById("rewarded-btn").innerText = "Continue to File";
-                }
-
-            } catch (err) {
-                console.error("Ad Config Fetch Error:", err);
-                document.getElementById("rewarded-btn").innerText = "Continue to File";
+            // 1. Inject Header Ad
+            if (currentAdConfig.header && currentAdConfig.header.status) {
+                injectAd("top-ad-space", currentAdConfig.header.script_code);
             }
-        }
 
-        function injectAdScript(elementId, scriptHtml) {
-            const container = document.getElementById(elementId);
-            container.innerHTML = scriptHtml;
-            // Execute inner scripts
-            Array.from(container.querySelectorAll("script")).forEach(oldScript => {
-                const newScript = document.createElement("script");
-                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-                oldScript.parentNode.replaceChild(newScript, oldScript);
+            // 2. Inject Footer Ad
+            if (currentAdConfig.footer && currentAdConfig.footer.status) {
+                injectAd("bottom-ad-space", currentAdConfig.footer.script_code);
+            }
+
+            // 3. Inject Rewarded Ad SDK (Monetag / OnClick)
+            if (currentAdConfig.popup && currentAdConfig.popup.status && currentAdConfig.popup.script_url) {
+                loadScript(currentAdConfig.popup.script_url);
+            }
+        } catch (e) {
+            console.warn("Dynamic API connection failed. Running default flow.", e);
+        }
+    }
+
+    function injectAd(elementId, htmlCode) {
+        const el = document.getElementById(elementId);
+        if(!htmlCode) return;
+        el.innerHTML = htmlCode;
+        Array.from(el.querySelectorAll("script")).forEach(oldScript => {
+            const newScript = document.createElement("script");
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
+
+    function loadScript(url) {
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = true;
+        document.head.appendChild(script);
+    }
+
+    function handleRewardedAction() {
+        const btn = document.getElementById("rewarded-btn");
+        btn.disabled = true;
+
+        // Monetag / OnClick Rewarded Trigger Check
+        if (typeof show_rewarded === 'function') {
+            show_rewarded().then(() => {
+                window.location.href = "step2.html";
+            }).catch(() => {
+                window.location.href = "step2.html";
             });
-        }
-
-        function injectScriptTag(url) {
-            if(!url) return;
-            const script = document.createElement("script");
-            script.src = url;
-            script.async = true;
-            document.head.appendChild(script);
-        }
-
-        function playRewardedAd() {
-            const btn = document.getElementById("rewarded-btn");
-            btn.disabled = true;
-
-            // अगर Monetag / OnClick का Rewarded Tag Active है
-            if (currentConfig.popup && currentConfig.popup.status && typeof show_rewarded === 'function') {
-                show_rewarded().then(() => {
+        } else {
+            let timer = 5;
+            const interval = setInterval(() => {
+                btn.innerText = `Please wait ${timer}s...`;
+                timer--;
+                if (timer < 0) {
+                    clearInterval(interval);
                     window.location.href = "step2.html";
-                }).catch(() => {
-                    window.location.href = "step2.html";
-                });
-            } else {
-                // अगर नो-ऐड है या फेल हो जाए तो टाइमर चलाकर आगे बढ़ाएं
-                let count = 5;
-                const timer = setInterval(() => {
-                    btn.innerText = `Please wait ${count}s...`;
-                    count--;
-                    if (count < 0) {
-                        clearInterval(timer);
-                        window.location.href = "step2.html";
-                    }
-                }, 1000);
-            }
+                }
+            }, 1000);
         }
+    }
 
-        // लोड होते ही बोट से डेटा मंगाएं
-        loadDynamicAds();
-    </script>
+    // Load dynamic settings on open
+    fetchAdConfig();
+</script>
+
 </body>
 </html>
