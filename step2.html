@@ -3,36 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Link - Step 2</title>
+    <title>Step 2 - Download Ready</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .ad-space { margin: 15px 0; min-height: 90px; background: #fafafa; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
-        .btn-green { padding: 15px 30px; font-size: 18px; color: #fff; background: #28a745; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; width: 80%; }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background: #f8f9fa; }
+        .ad-space { margin: 15px auto; min-height: 90px; width: 100%; display: flex; justify-content: center; }
+        .btn-green { padding: 15px 30px; font-size: 18px; color: #fff; background: #28a745; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- TOP AD SPACE -->
-    <div id="top-ad" class="ad-space"><span>[ Banner Ad Top ]</span></div>
+    <!-- STEP 2 TOP AD -->
+    <div id="p2-top-ad" class="ad-space"></div>
 
-    <h2>🎉 Your File Link is Ready!</h2>
-    <p>Click the button below to get your direct file.</p>
+    <h2>🎉 Your File is Ready! (Step 2/2)</h2>
+    <p>Click below to get your direct file.</p>
 
     <!-- GET LINK BUTTON -->
-    <a id="final-link" href="#" class="btn-green">🚀 Get Link</a>
+    <a id="file-btn" href="#" class="btn-green">🚀 Get Link</a>
 
-    <!-- BOTTOM AD SPACE -->
-    <div id="bottom-ad" class="ad-space"><span>[ Banner Ad Bottom ]</span></div>
-</div>
+    <!-- STEP 2 BOTTOM AD -->
+    <div id="p2-bottom-ad" class="ad-space"></div>
 
 <script>
-    // Get target link from URL query parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const fileUrl = urlParams.get('url') || "https://telegram.org";
-    document.getElementById("final-link").href = fileUrl;
-</script>
+    const API_URL = "https://YOUR_CLOUDFLARE_URL.trycloudflare.com/api/get-ad-config";
 
+    async function loadAds() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+
+            // 1. Step 2 Top Ad
+            if (data.page2_header && data.page2_header.status && data.page2_header.script_code) {
+                injectAd("p2-top-ad", data.page2_header.script_code);
+            }
+
+            // 2. Step 2 Bottom Ad
+            if (data.page2_footer && data.page2_footer.status && data.page2_footer.script_code) {
+                injectAd("p2-bottom-ad", data.page2_footer.script_code);
+            }
+        } catch (e) {
+            console.log("Error loading ads:", e);
+        }
+    }
+
+    function injectAd(elementId, html) {
+        const div = document.getElementById(elementId);
+        div.innerHTML = html;
+        Array.from(div.querySelectorAll("script")).forEach(oldScript => {
+            const newScript = document.createElement("script");
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
+
+    loadAds();
+</script>
 </body>
 </html>
