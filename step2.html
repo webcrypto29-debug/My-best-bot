@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Link - Step 2</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .ad-space { margin: 15px 0; min-height: 90px; background: #fafafa; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; }
+        .btn-green { padding: 15px 30px; font-size: 18px; color: #fff; background: #28a745; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; width: 80%; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- TOP AD SPACE -->
+    <div id="top-ad" class="ad-space"><span>[ Banner Ad Top ]</span></div>
+
+    <h2>🎉 Your File Link is Ready!</h2>
+    <p>Click the button below to get your direct file.</p>
+
+    <!-- GET LINK BUTTON -->
+    <a id="final-link" href="#" class="btn-green">🚀 Get Link</a>
+
+    <!-- BOTTOM AD SPACE -->
+    <div id="bottom-ad" class="ad-space"><span>[ Banner Ad Bottom ]</span></div>
+</div>
+
+<script>
+    // Get target link from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileUrl = urlParams.get('url') || "https://telegram.org";
+    document.getElementById("final-link").href = fileUrl;
+</script>
+
+</body>
+</html>
